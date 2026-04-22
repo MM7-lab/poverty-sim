@@ -24,6 +24,11 @@
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.05); }
         }
+        .slide-in { animation: slide-in 0.4s ease-out forwards; }
+        @keyframes slide-in {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
     </style>
 </head>
 <body class="bg-gray-100 font-sans text-gray-800 overflow-x-hidden">
@@ -62,12 +67,14 @@
 
             const [showResult, setShowResult] = useState(false);
             const [animationClass, setAnimationClass] = useState('');
+            // 新增狀態：追蹤當前顯示的類別索引 (分頁模式)
+            const [currentStep, setCurrentStep] = useState(0);
             
             const categories = [
                 {
                     id: 'housing',
-                    title: '1. 居住環境 (Housing)',
-                    icon: <IconHome className="w-5 h-5 text-blue-500" />,
+                    title: '居住環境 (Housing)',
+                    icon: <IconHome className="w-6 h-6 text-blue-500" />,
                     options: [
                         { price: 7500, label: '舊樓兩房單位', desc: '雖然舊但有獨立房窗，位於市區。', quality: '尚可', impact: '', image: 'https://i.postimg.cc/cHX4hM2G/1.jpg' },
                         { price: 4800, label: '深水埗劏房', desc: '120呎，廚廁合一。', quality: '惡劣', impact: '空間極度擠迫，油煙味重，兄妹無處轉身，容易因爭奪空間而吵架。', concept: '#空間貧窮', affects: { quality: 1, relationship: 1, health: 0.5 }, image: 'https://i.postimg.cc/HxBsz4Kf/2.jpg' },
@@ -76,8 +83,8 @@
                 },
                 {
                     id: 'food',
-                    title: '2. 膳食開支 (Food)',
-                    icon: <IconUtensils className="w-5 h-5 text-orange-500" />,
+                    title: '膳食開支 (Food)',
+                    icon: <IconUtensils className="w-6 h-6 text-orange-500" />,
                     options: [
                         { price: 4500, label: '街市買餸煮飯', desc: '堅持每日新鮮食材，三餸一湯。', quality: '健康', impact: '', image: 'https://i.postimg.cc/B6MQpcyV/4.jpg' },
                         { price: 3000, label: '急凍與特價品', desc: '專攻超市特價與急凍肉自行煮食。', quality: '普通', impact: '營養攝取不均，長期食用急凍肉類，缺乏新鮮蔬果，孩子體質較弱。', concept: '#隱性飢餓', affects: { quality: 0.5, relationship: 0, health: 0.5 }, image: 'https://i.postimg.cc/gjjcTLFT/5.jpg' },
@@ -86,8 +93,8 @@
                 },
                 {
                     id: 'transport',
-                    title: '3. 交通出行 (Transport)',
-                    icon: <IconArrowRight className="w-5 h-5 text-gray-500" />,
+                    title: '交通出行 (Transport)',
+                    icon: <IconArrowRight className="w-6 h-6 text-gray-500" />,
                     options: [
                         { price: 1200, label: '港鐵與巴士', desc: '正常通勤，確保睡眠時間。', quality: '正常', impact: '', image: 'https://i.postimg.cc/6qq6m4Jg/7.jpg' },
                         { price: 100, label: '步行或踩單車', desc: '極限節省，無論多遠都盡量不搭車。', quality: '疲勞', impact: '日曬雨淋，極度消耗體力。在繁忙馬路邊行走或踏單車吸入廢氣，亦有交通安全風險。回家後累得無法與家人互動。', concept: '#時間貧窮', affects: { quality: 0.8, relationship: 1.2, health: 1 }, image: 'https://i.postimg.cc/rssyPR26/8.jpg' }
@@ -95,8 +102,8 @@
                 },
                 {
                     id: 'education',
-                    title: '4. 子女教育 (Education)',
-                    icon: <IconBookOpen className="w-5 h-5 text-green-600" />,
+                    title: '子女教育 (Education)',
+                    icon: <IconBookOpen className="w-6 h-6 text-green-600" />,
                     options: [
                         { price: 2500, label: '補習與興趣班', desc: '專科補習 + 一項興趣（如畫畫）。', quality: '良好', impact: '', image: 'https://i.postimg.cc/6qq6m4xW/9.jpg' },
                         { price: 1500, label: '只補主科', desc: '只補英文/數學，放棄興趣班。', quality: '基本', impact: '保住了學業基本盤，但生活只剩下讀書與考試。缺乏才藝發展，孩子在學校話題減少，生活單調乏味。', concept: '#發展權利剝奪', affects: { quality: 0.5, relationship: 0.5, health: 0.2 }, image: 'https://i.postimg.cc/mkkZ51W2/10.jpg' },
@@ -105,8 +112,8 @@
                 },
                 {
                     id: 'medical',
-                    title: '5. 醫療健康 (Medical)',
-                    icon: <IconStethoscope className="w-5 h-5 text-red-500" />,
+                    title: '醫療健康 (Medical)',
+                    icon: <IconStethoscope className="w-6 h-6 text-red-500" />,
                     options: [
                         { price: 800, label: '私家診所', desc: '生病即看醫生，快速康復。', quality: '安心', impact: '', image: 'https://i.postimg.cc/3NNrc0Qy/12.jpg' },
                         { price: 200, label: '公立門診', desc: '清晨排籌或輪候急症。', quality: '風險', impact: '需花費大量時間輪候，往往小病拖成大病。生病期間無法休息仍需照顧家庭，身心俱疲。', concept: '#醫療可達性', affects: { quality: 0.5, relationship: 0.5, health: 0.8 }, image: 'https://i.postimg.cc/Y0P2K2tC/13.jpg' },
@@ -115,8 +122,8 @@
                 },
                 {
                     id: 'utilities',
-                    title: '6. 水電煤網 (Utilities)',
-                    icon: <IconAlertCircle className="w-5 h-5 text-yellow-500" />,
+                    title: '水電煤網 (Utilities)',
+                    icon: <IconAlertCircle className="w-6 h-6 text-yellow-500" />,
                     options: [
                         { price: 1000, label: '舒適使用', desc: '夏天開冷氣、穩定寬頻。', quality: '舒適', impact: '', image: 'https://i.postimg.cc/x8ZjDj98/15.jpg' },
                         { price: 700, label: '審慎使用', desc: '限時開冷氣，時刻留意電錶。', quality: '緊張', impact: '為了省電，即使熱也只開風扇，只有睡覺前才敢開一會冷氣。全家人精神緊張，時常為「誰忘了關燈」而爭吵。', concept: '#能源焦慮', affects: { quality: 0.5, relationship: 0.5, health: 0.2 }, image: 'https://i.postimg.cc/mknZfZTc/16.jpg' },
@@ -125,8 +132,8 @@
                 },
                 {
                     id: 'clothes',
-                    title: '7. 衣物鞋履 (Clothing)',
-                    icon: <IconShirt className="w-5 h-5 text-purple-500" />,
+                    title: '衣物鞋履 (Clothing)',
+                    icon: <IconShirt className="w-6 h-6 text-purple-500" />,
                     options: [
                         { price: 500, label: '季季添置', desc: '校服合身整潔，保持自信。', quality: '體面', impact: '', image: 'https://i.postimg.cc/1XdRhRyr/18.jpg' },
                         { price: 200, label: '特價/平價網購', desc: '購買淘寶或特賣場衣物。', quality: '普通', impact: '質料較差或款式過時，鞋子容易磨腳。雖能蔽體，但在著重物質的朋輩圈子中可能會感到尷尬。', concept: '#物質匱乏', affects: { quality: 0.5, relationship: 0.2, health: 0.1 }, image: 'https://i.postimg.cc/HnNWDWTz/19.jpg' },
@@ -147,6 +154,20 @@
                 setChoices(prev => ({ ...prev, [categoryId]: optionIndex }));
                 setAnimationClass('animate-bounce-custom');
                 setTimeout(() => setAnimationClass(''), 300);
+            };
+
+            const handleNextStep = () => {
+                if (currentStep < categories.length - 1) {
+                    setCurrentStep(prev => prev + 1);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            };
+
+            const handlePrevStep = () => {
+                if (currentStep > 0) {
+                    setCurrentStep(prev => prev - 1);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
             };
 
             const calculateScores = () => {
@@ -174,252 +195,280 @@
 
             const scores = calculateScores();
 
+            // 為了適應深淺色背景，統一使用高彩度顏色
             const getScoreColor = (score) => {
-                if (score >= 80) return 'text-green-600';
-                if (score >= 50) return 'text-amber-500';
-                return 'text-red-600';
+                if (score >= 80) return 'text-green-400';
+                if (score >= 50) return 'text-amber-400';
+                return 'text-red-400';
             };
 
             const getBarColor = (score) => {
                 if (score >= 80) return 'bg-green-500';
-                if (score >= 50) return 'bg-amber-400';
+                if (score >= 50) return 'bg-amber-500';
                 return 'bg-red-500';
             };
 
             const activeImpacts = categories
                 .filter(cat => choices[cat.id] > 0 && cat.options[choices[cat.id]].impact)
                 .map(cat => ({
-                    title: cat.title.split(' ')[1], 
+                    title: cat.title, 
                     text: cat.options[choices[cat.id]].impact,
                     icon: cat.icon,
                     concept: cat.options[choices[cat.id]].concept,
                     affects: cat.options[choices[cat.id]].affects
                 }));
 
+            // 取得目前分頁的類別
+            const currentCat = categories[currentStep];
+
             return (
-                /* 優化響應式佈局：在手機版允許自然滾動 (無 h-screen)，在桌面版 (lg:) 套用左右分割與各自滾動 */
-                <div className="min-h-screen bg-gray-100 font-sans text-gray-800 flex flex-col lg:flex-row lg:h-screen lg:overflow-hidden">
+                /* 單欄瀑布流佈局：移除 lg:flex-row 與 lg:overflow-hidden，讓內容自然向下延伸 */
+                <div className="min-h-screen bg-gray-100 font-sans text-gray-800 flex flex-col relative">
                     
-                    {/* LEFT COLUMN: Scrollable Content (Financials & Choices) */}
-                    <div className="flex-1 flex flex-col lg:h-full lg:overflow-y-auto relative">
-                        
-                        {/* COMPACT HEADER: 提高 z-index 確保在手機滑動時始終置頂 */}
-                        <header className="bg-slate-800 text-white p-3 sticky top-0 z-40 shadow-lg border-b-4 border-slate-600">
-                            <div className="max-w-3xl mx-auto w-full space-y-2">
-                                {/* Top Row: Title & Income */}
-                                <div className="flex justify-between items-center">
-                                    <div className="flex items-baseline gap-2">
-                                        <h1 className="text-base font-bold tracking-wide">貧窮模擬器</h1>
-                                        <span className="text-[10px] text-slate-400">目標：生存</span>
-                                    </div>
-                                    <div className="flex items-center gap-2 bg-slate-700/50 px-2 py-1 rounded border border-slate-600">
-                                        <span className="text-[10px] text-slate-300 uppercase flex items-center gap-1">
-                                            <IconCoin className="w-3 h-3 text-yellow-400" />
-                                            固定月入
-                                        </span>
-                                        <span className="font-bold text-sm text-white">${INCOME.toLocaleString()}</span>
-                                    </div>
-                                </div>
-
-                                {/* Middle Row: Stats */}
-                                <div className="bg-slate-900/40 rounded-lg p-2 border border-slate-700 flex justify-between items-center">
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] text-slate-400">預計結餘</span>
-                                        <span className={`text-2xl font-bold leading-none ${isDeficit ? 'text-red-400' : 'text-green-400'} ${animationClass} transition-all duration-300`}>
-                                            {balance > 0 ? '+' : ''}{balance.toLocaleString()}
-                                        </span>
-                                    </div>
-                                    <div className="flex flex-col items-end">
-                                        <span className="text-[10px] text-slate-400">總支出</span>
-                                        <span className="text-lg font-bold text-white leading-none">${totalExpenses.toLocaleString()}</span>
-                                    </div>
-                                </div>
-
-                                {/* Progress Bar */}
-                                <div className="relative h-1.5 w-full bg-slate-700 rounded-full overflow-hidden">
-                                    <div style={{ width: `${Math.min((totalExpenses / INCOME) * 100, 100)}%` }} className={`h-full transition-all duration-500 ${isDeficit ? 'bg-red-500' : 'bg-green-500'}`}></div>
-                                </div>
-
-                                {/* Warning Message */}
-                                {isDeficit ? (
-                                    <div className="bg-red-500/10 border border-red-500/50 text-red-200 px-2 py-1 rounded text-xs font-bold flex items-center justify-center gap-2">
-                                        <IconAlertCircle className="w-3 h-3 text-red-400" />
-                                        <span>警告：入不敷出！請選擇便宜選項。</span>
-                                    </div>
-                                ) : (
-                                    <div className="bg-green-500/10 border border-green-500/50 text-green-200 px-2 py-1 rounded text-xs font-bold flex items-center justify-center gap-2">
-                                        <IconCheckCircle className="w-3 h-3 text-green-400" />
-                                        <span>收支平衡。留意右側生活指數。</span>
-                                    </div>
-                                )}
-                            </div>
-                        </header>
-
-                        {/* Categories List */}
-                        <div className="p-4 space-y-4 pb-6 lg:pb-24 max-w-3xl mx-auto w-full mt-2">
-                            {categories.map((cat) => (
-                                <div key={cat.id} className="bg-white rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow">
-                                    <div className="flex items-center gap-2 mb-3">
-                                        {cat.icon}
-                                        <h3 className="font-bold text-lg">{cat.title}</h3>
-                                    </div>
-
-                                    {/* 響應式網格：手機 1 列，大螢幕 2 列 */}
-                                    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
-                                        {cat.options.map((option, index) => {
-                                            const isSelected = choices[cat.id] === index;
-                                            let badgeColor = 'bg-green-500';
-                                            if (index === 1) badgeColor = 'bg-amber-500';
-                                            if (index === 2) badgeColor = 'bg-red-500';
-
-                                            return (
-                                                <button
-                                                    key={index}
-                                                    onClick={() => handleSelect(cat.id, index)}
-                                                    className={`w-full text-left p-3 rounded-lg border-2 transition-all duration-200 relative group flex flex-col h-full ${isSelected ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-100' : 'border-gray-200 hover:border-gray-300 bg-white'}`}
-                                                >
-                                                    {option.image && (
-                                                        <div className="mb-3 w-full bg-white rounded-md overflow-hidden border border-gray-100">
-                                                            <img src={option.image} alt={option.label} className="w-full h-40 object-cover mx-auto" />
-                                                        </div>
-                                                    )}
-                                                    <div className="flex flex-col gap-1 mb-2">
-                                                        <span className={`font-bold text-base ${isSelected ? 'text-blue-700' : 'text-gray-700'}`}>{option.label}</span>
-                                                        <span className="font-mono font-bold text-slate-600 text-lg">${option.price.toLocaleString()}</span>
-                                                    </div>
-                                                    <p className="text-xs text-gray-500 flex-grow mb-2 leading-relaxed">{option.desc}</p>
-                                                    
-                                                    <div className="mt-auto pt-2 border-t border-gray-100 flex justify-between items-center">
-                                                        <span className={`text-[10px] text-white px-2 py-0.5 rounded-full ${badgeColor}`}>{option.quality}</span>
-                                                        {index > 0 && isSelected && (
-                                                            <span className="text-[10px] text-red-500 font-bold">{index === 1 ? '-分' : '--分'}</span>
-                                                        )}
-                                                    </div>
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* RIGHT COLUMN: Quality of Life */}
-                    <div className="w-full lg:w-[400px] bg-slate-50 border-t lg:border-t-0 lg:border-l border-gray-200 flex flex-col h-auto lg:h-full shadow-[0_-10px_40px_rgba(0,0,0,0.05)] lg:shadow-2xl z-30">
-                        <div className="p-6 flex flex-col h-full lg:overflow-y-auto">
+                    {/* COMPACT HEADER - 針對手機版大幅縮小內邊距與間距 */}
+                    <header className="bg-slate-800 text-white p-2.5 md:p-4 sticky top-0 z-40 shadow-lg border-b-4 border-slate-600">
+                        <div className="max-w-5xl mx-auto w-full space-y-2 md:space-y-3">
                             
-                            {/* Status Scores Section */}
-                            <div className="mb-6 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-                                <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2 mb-1">
-                                    <IconActivity className="text-slate-600 w-5 h-5" />
-                                    目前生活狀況指數
-                                </h2>
-                                <p className="text-xs text-gray-400 mb-4">初始 100 分，數值越低代表狀況越危急</p>
-                                
-                                <div className="space-y-4">
-                                    <div>
-                                        <div className="flex justify-between items-center mb-1">
-                                            <span className="text-sm font-bold text-gray-600 flex items-center gap-2"><IconStar className="w-4 h-4 text-amber-500" /> 生活品質</span>
-                                            <span className={`text-sm font-bold ${getScoreColor(scores.quality)}`}>{scores.quality.toFixed(0)}/100</span>
-                                        </div>
-                                        <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
-                                            <div className={`h-full transition-all duration-500 ${getBarColor(scores.quality)}`} style={{ width: `${scores.quality}%` }}></div>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div className="flex justify-between items-center mb-1">
-                                            <span className="text-sm font-bold text-gray-600 flex items-center gap-2"><IconUsers className="w-4 h-4 text-blue-500" /> 家庭關係</span>
-                                            <span className={`text-sm font-bold ${getScoreColor(scores.relationship)}`}>{scores.relationship.toFixed(0)}/100</span>
-                                        </div>
-                                        <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
-                                            <div className={`h-full transition-all duration-500 ${getBarColor(scores.relationship)}`} style={{ width: `${scores.relationship}%` }}></div>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div className="flex justify-between items-center mb-1">
-                                            <span className="text-sm font-bold text-gray-600 flex items-center gap-2"><IconHeartCrack className="w-4 h-4 text-red-500" /> 身心健康</span>
-                                            <span className={`text-sm font-bold ${getScoreColor(scores.health)}`}>{scores.health.toFixed(0)}/100</span>
-                                        </div>
-                                        <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
-                                            <div className={`h-full transition-all duration-500 ${getBarColor(scores.health)}`} style={{ width: `${scores.health}%` }}></div>
-                                        </div>
-                                    </div>
+                            {/* Top Row: Title & Income */}
+                            <div className="flex justify-between items-center border-b border-slate-700 pb-1.5 md:pb-2">
+                                <div className="flex items-baseline gap-2">
+                                    <h1 className="text-base md:text-lg font-bold tracking-wide">貧窮模擬器</h1>
+                                    <span className="text-[10px] md:text-xs text-slate-400 hidden sm:inline">目標：生存</span>
+                                </div>
+                                <div className="flex items-center gap-1.5 md:gap-2 bg-slate-700/50 px-2 py-1 md:px-3 md:py-1.5 rounded border border-slate-600">
+                                    <span className="text-[9px] md:text-[10px] text-slate-300 uppercase flex items-center gap-1">
+                                        <IconCoin className="w-3 h-3 md:w-3.5 md:h-3.5 text-yellow-400" />
+                                        <span className="hidden xs:inline">固定月入</span>
+                                        <span className="xs:hidden">月入</span>
+                                    </span>
+                                    <span className="font-bold text-sm md:text-base text-white">${INCOME.toLocaleString()}</span>
                                 </div>
                             </div>
 
-                            {/* Impact Explanations */}
-                            <div className="flex-1 space-y-4">
-                                <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider border-b pb-2">當前選擇的結果</h3>
-                                {activeImpacts.length === 0 ? (
-                                    <div className="text-center py-4 text-gray-400 italic text-sm"><p>目前生活維持在理想狀態。</p></div>
-                                ) : (
-                                    <div className="space-y-4">
-                                        {activeImpacts.map((impact, idx) => (
-                                            <div key={idx} className="bg-white p-4 rounded-lg shadow-sm border-l-4 border-red-400">
-                                                <div className="flex items-center justify-between mb-2">
-                                                    <div className="flex items-center gap-2 text-slate-700 font-bold">
-                                                        {impact.icon}<span>{impact.title}</span>
-                                                    </div>
-                                                    <div className="flex gap-1">
-                                                        {impact.affects?.quality > 0 && <IconStar className="w-3 h-3 text-amber-500" />}
-                                                        {impact.affects?.relationship > 0 && <IconUsers className="w-3 h-3 text-blue-500" />}
-                                                        {impact.affects?.health > 0 && <IconHeartCrack className="w-3 h-3 text-red-500" />}
-                                                    </div>
-                                                </div>
-                                                <p className="text-sm text-gray-600 leading-relaxed mb-2">{impact.text}</p>
-                                                {impact.concept && <span className="text-[10px] bg-red-50 text-red-600 border border-red-100 px-2 py-1 rounded inline-block">{impact.concept}</span>}
+                            {/* Dashboard Row: Financials (Left) & Status Scores (Right) */}
+                            <div className="flex flex-col md:flex-row gap-2 md:gap-4">
+                                
+                                {/* 左側區塊：財務預算條 */}
+                                <div className="flex-1 flex flex-col gap-1.5 md:gap-2">
+                                    <div className="bg-slate-900/40 rounded-lg p-2 md:p-3 border border-slate-700">
+                                        <div className="flex justify-between items-center mb-1.5 md:mb-2">
+                                            <div className="flex flex-col">
+                                                <span className="text-[9px] md:text-[11px] text-slate-400 uppercase tracking-wider mb-0.5 md:mb-1">預計結餘</span>
+                                                <span className={`text-xl md:text-3xl font-bold leading-none ${isDeficit ? 'text-red-400' : 'text-green-400'} ${animationClass} transition-all duration-300`}>
+                                                    {balance > 0 ? '+' : ''}{balance.toLocaleString()}
+                                                </span>
                                             </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Action Button */}
-                            <div className="mt-6 pt-6 border-t">
-                                <button 
-                                    onClick={() => setShowResult(true)}
-                                    disabled={isDeficit}
-                                    className={`w-full py-4 rounded-xl font-bold text-lg shadow-lg transition-all transform active:scale-95 ${isDeficit ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-slate-800 text-white hover:bg-slate-700'}`}
-                                >
-                                    {isDeficit ? '請先消除赤字' : '確認月度預算'}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Result Modal */}
-                    {showResult && (
-                        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-                            <div className="bg-white rounded-2xl max-w-md w-full p-8 overflow-y-auto max-h-[90vh]">
-                                <h2 className="text-2xl font-bold mb-4 text-center">體驗總結</h2>
-                                <p className="text-gray-600 mb-6 text-center">您成功平衡了收支，但這是您家庭本月的生活狀態：</p>
-                                
-                                <div className="flex justify-around mb-6 text-center gap-2">
-                                    <div className="flex-1 bg-amber-50 p-2 rounded-lg">
-                                        <div className={`text-2xl font-bold ${getScoreColor(scores.quality)}`}>{scores.quality.toFixed(0)}</div>
-                                        <div className="text-xs text-gray-500">生活品質</div>
-                                    </div>
-                                    <div className="flex-1 bg-blue-50 p-2 rounded-lg">
-                                        <div className={`text-2xl font-bold ${getScoreColor(scores.relationship)}`}>{scores.relationship.toFixed(0)}</div>
-                                        <div className="text-xs text-gray-500">家庭關係</div>
-                                    </div>
-                                    <div className="flex-1 bg-red-50 p-2 rounded-lg">
-                                        <div className={`text-2xl font-bold ${getScoreColor(scores.health)}`}>{scores.health.toFixed(0)}</div>
-                                        <div className="text-xs text-gray-500">身心健康</div>
-                                    </div>
-                                </div>
-                                
-                                <div className="space-y-3 mb-8 bg-gray-50 p-4 rounded-xl">
-                                    {activeImpacts.length > 0 ? activeImpacts.map((impact, i) => (
-                                        <div key={i} className="flex gap-3 text-sm text-gray-700">
-                                            <span className="text-red-500 mt-1 min-w-[10px]">●</span>
-                                            <span>{impact.text}</span>
+                                            <div className="flex flex-col items-end">
+                                                <span className="text-[9px] md:text-[11px] text-slate-400 uppercase tracking-wider mb-0.5 md:mb-1">總支出</span>
+                                                <span className="text-lg md:text-2xl font-bold text-white leading-none">${totalExpenses.toLocaleString()}</span>
+                                            </div>
                                         </div>
-                                    )) : (
-                                        <p className="text-center text-green-600 font-bold">不可思議！您維持了完美的生活狀態！</p>
+
+                                        {/* Progress Bar */}
+                                        <div className="relative h-1.5 md:h-2 w-full bg-slate-700 rounded-full overflow-hidden">
+                                            <div style={{ width: `${Math.min((totalExpenses / INCOME) * 100, 100)}%` }} className={`h-full transition-all duration-500 ${isDeficit ? 'bg-red-500' : 'bg-green-500'}`}></div>
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Warning Message */}
+                                    {isDeficit ? (
+                                        <div className="bg-red-500/10 border border-red-500/50 text-red-200 px-2 py-1 md:px-3 md:py-2 rounded text-[10px] md:text-xs font-bold flex items-center justify-center gap-1.5 md:gap-2">
+                                            <IconAlertCircle className="w-3.5 h-3.5 md:w-4 md:h-4 text-red-400 shrink-0" />
+                                            <span>警告：入不敷出！請在下方選擇較便宜的選項。</span>
+                                        </div>
+                                    ) : (
+                                        <div className="bg-green-500/10 border border-green-500/50 text-green-200 px-2 py-1 md:px-3 md:py-2 rounded text-[10px] md:text-xs font-bold flex items-center justify-center gap-1.5 md:gap-2">
+                                            <IconCheckCircle className="w-3.5 h-3.5 md:w-4 md:h-4 text-green-400 shrink-0" />
+                                            <span>收支平衡。留意右側生活指數。</span>
+                                        </div>
                                     )}
                                 </div>
-                                <button onClick={() => setShowResult(false)} className="w-full bg-slate-800 text-white py-3 rounded-xl font-bold">重新體驗</button>
+
+                                {/* 右側區塊：目前生活狀況指數 (手機版改為橫向並排以節省高度) */}
+                                <div className="flex-1 bg-slate-900/40 rounded-lg p-2 md:p-3 border border-slate-700 flex flex-col justify-center">
+                                    <div className="flex justify-between items-center mb-1.5 md:mb-2">
+                                        <h2 className="text-[10px] md:text-xs font-bold text-slate-300 flex items-center gap-1 md:gap-1.5 uppercase tracking-wider">
+                                            <IconActivity className="w-3 h-3 md:w-4 md:h-4" />
+                                            <span className="hidden xs:inline">目前生活狀況指數</span>
+                                            <span className="xs:hidden">生活狀況</span>
+                                        </h2>
+                                        <span className="text-[8px] md:text-[9px] text-slate-500">滿分 100</span>
+                                    </div>
+                                    
+                                    <div className="grid grid-cols-3 gap-2 md:grid-cols-1 md:space-y-2.5">
+                                        {/* Quality Index */}
+                                        <div className="flex flex-col md:block">
+                                            <div className="flex justify-center md:justify-between items-center mb-1">
+                                                <span className="text-[9px] md:text-xs font-bold text-slate-400 flex items-center gap-1">
+                                                    <IconStar className="w-3 h-3 md:w-3.5 md:h-3.5 text-amber-500" /> <span className="hidden md:inline">生活品質</span>
+                                                </span>
+                                                <span className={`text-[10px] md:text-xs font-bold ml-1 md:ml-0 ${getScoreColor(scores.quality)}`}>{scores.quality.toFixed(0)}</span>
+                                            </div>
+                                            <div className="h-1 md:h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                                                <div className={`h-full transition-all duration-500 ${getBarColor(scores.quality)}`} style={{ width: `${scores.quality}%` }}></div>
+                                            </div>
+                                        </div>
+
+                                        {/* Relationship Index */}
+                                        <div className="flex flex-col md:block">
+                                            <div className="flex justify-center md:justify-between items-center mb-1">
+                                                <span className="text-[9px] md:text-xs font-bold text-slate-400 flex items-center gap-1">
+                                                    <IconUsers className="w-3 h-3 md:w-3.5 md:h-3.5 text-blue-400" /> <span className="hidden md:inline">家庭關係</span>
+                                                </span>
+                                                <span className={`text-[10px] md:text-xs font-bold ml-1 md:ml-0 ${getScoreColor(scores.relationship)}`}>{scores.relationship.toFixed(0)}</span>
+                                            </div>
+                                            <div className="h-1 md:h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                                                <div className={`h-full transition-all duration-500 ${getBarColor(scores.relationship)}`} style={{ width: `${scores.relationship}%` }}></div>
+                                            </div>
+                                        </div>
+
+                                        {/* Health Index */}
+                                        <div className="flex flex-col md:block">
+                                            <div className="flex justify-center md:justify-between items-center mb-1">
+                                                <span className="text-[9px] md:text-xs font-bold text-slate-400 flex items-center gap-1">
+                                                    <IconHeartCrack className="w-3 h-3 md:w-3.5 md:h-3.5 text-red-500" /> <span className="hidden md:inline">身心健康</span>
+                                                </span>
+                                                <span className={`text-[10px] md:text-xs font-bold ml-1 md:ml-0 ${getScoreColor(scores.health)}`}>{scores.health.toFixed(0)}</span>
+                                            </div>
+                                            <div className="h-1 md:h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                                                <div className={`h-full transition-all duration-500 ${getBarColor(scores.health)}`} style={{ width: `${scores.health}%` }}></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* MAIN CONTENT: 橫向延伸的選項區域 */}
+                    <div className="flex-1 flex flex-col w-full">
+                        <div className="p-3 md:p-4 space-y-4 pb-12 max-w-5xl mx-auto w-full mt-2 md:mt-4">
+                            
+                            {/* Step Progress Indicator */}
+                            <div className="flex justify-between items-center text-xs md:text-sm font-bold text-slate-500 mb-1 md:mb-2 px-1">
+                                <span>步驟 {currentStep + 1} / {categories.length}</span>
+                            </div>
+
+                            {/* Current Category Card */}
+                            <div key={currentCat.id} className="bg-white rounded-xl shadow-md p-4 md:p-6 border border-gray-200 slide-in">
+                                <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6 pb-3 md:pb-4 border-b border-gray-100">
+                                    {currentCat.icon}
+                                    <h3 className="font-bold text-xl md:text-2xl text-gray-800">{currentCat.title}</h3>
+                                </div>
+
+                                {/* Options Grid: 擴展為 3 列佈局以適應寬螢幕 */}
+                                <div className={`grid gap-3 md:gap-6 ${currentCat.options.length === 3 ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-1 sm:grid-cols-2'}`}>
+                                    {currentCat.options.map((option, index) => {
+                                        const isSelected = choices[currentCat.id] === index;
+                                        
+                                        // Emoji Logic
+                                        let qualityEmoji = '🙂';
+                                        if (index === 1) qualityEmoji = '😐'; 
+                                        if (index === 2) qualityEmoji = '😢'; 
+
+                                        return (
+                                            <button
+                                                key={index}
+                                                onClick={() => handleSelect(currentCat.id, index)}
+                                                className={`w-full text-left p-3 md:p-4 rounded-xl border-2 transition-all duration-200 relative group flex flex-col h-full ${isSelected ? 'border-blue-500 bg-blue-50/50 shadow-md ring-2 md:ring-4 ring-blue-100' : 'border-gray-200 hover:border-blue-300 bg-white hover:shadow-sm'}`}
+                                            >
+                                                {/* 圖片高度自適應：手機 28，平板 36，電腦 48 */}
+                                                {option.image && (
+                                                    <div className="mb-3 md:mb-4 w-full bg-gray-50 rounded-lg overflow-hidden border border-gray-100">
+                                                        <img src={option.image} alt={option.label} className="w-full h-28 sm:h-36 md:h-48 object-cover mx-auto hover:scale-105 transition-transform duration-500" />
+                                                    </div>
+                                                )}
+                                                <div className="flex flex-col gap-1 md:gap-1.5 mb-2 md:mb-3">
+                                                    <span className={`font-bold text-base md:text-lg ${isSelected ? 'text-blue-800' : 'text-gray-800'}`}>{option.label}</span>
+                                                    <div className="flex items-baseline gap-2 flex-wrap">
+                                                        <span className="font-mono font-extrabold text-slate-700 text-lg md:text-xl">${option.price.toLocaleString()}</span>
+                                                        {currentCat.id === 'food' && (
+                                                            <span className="text-[10px] md:text-xs text-slate-500 font-medium bg-slate-100 px-1.5 py-0.5 rounded">
+                                                                (${Math.round(option.price / 30 / 3)}/人/日)
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <p className="text-xs md:text-sm text-gray-600 flex-grow mb-3 md:mb-4 leading-relaxed">{option.desc}</p>
+                                                
+                                                {/* Emoji Container */}
+                                                <div className="mt-auto pt-2 md:pt-3 border-t border-gray-100 flex justify-between items-center">
+                                                    <span className="text-2xl md:text-3xl leading-none transition-transform group-hover:scale-110" title={option.quality}>
+                                                        {qualityEmoji}
+                                                    </span>
+                                                </div>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            {/* Navigation Buttons: 手機版垂直全寬，桌面版水平分佈 */}
+                            <div className="flex flex-col-reverse sm:flex-row justify-between items-center mt-6 md:mt-8 pt-2 md:pt-4 gap-3 sm:gap-0">
+                                <button
+                                    onClick={handlePrevStep}
+                                    disabled={currentStep === 0}
+                                    className={`w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-base md:text-lg transition-all ${currentStep === 0 ? 'bg-gray-200 text-gray-400 cursor-not-allowed opacity-50' : 'bg-slate-200 text-slate-700 hover:bg-slate-300 active:scale-95 shadow-sm'}`}
+                                >
+                                    上一項
+                                </button>
+
+                                {currentStep < categories.length - 1 ? (
+                                    <button
+                                        onClick={handleNextStep}
+                                        className="w-full sm:w-auto justify-center px-8 py-3 rounded-xl font-bold text-base md:text-lg bg-blue-600 text-white hover:bg-blue-700 active:scale-95 transition-all shadow-md flex items-center gap-2"
+                                    >
+                                        下一項 <IconArrowRight className="w-4 h-4 md:w-5 md:h-5" />
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={() => setShowResult(true)}
+                                        disabled={isDeficit}
+                                        className={`w-full sm:w-auto justify-center px-8 py-3 rounded-xl font-bold text-base md:text-lg transition-all shadow-md ${isDeficit ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700 active:scale-95 animate-bounce-custom flex items-center gap-2'}`}
+                                    >
+                                        {isDeficit ? '請先消除赤字' : '結算總覽'}
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Result Modal - 保持不變以顯示最終解說 */}
+                    {showResult && (
+                        <div className="fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+                            <div className="bg-white rounded-2xl max-w-lg w-full p-8 overflow-y-auto max-h-[90vh] shadow-2xl">
+                                <h2 className="text-3xl font-extrabold mb-2 text-center text-slate-800">體驗總結</h2>
+                                <p className="text-slate-600 mb-8 text-center text-sm">您成功平衡了收支，但這是您家庭本月的生活狀態：</p>
+                                
+                                <div className="flex justify-around mb-8 text-center gap-3">
+                                    <div className="flex-1 bg-amber-50 p-3 rounded-xl border border-amber-100">
+                                        <div className={`text-3xl font-black ${getScoreColor(scores.quality).replace('400','500')}`}>{scores.quality.toFixed(0)}</div>
+                                        <div className="text-xs text-amber-800 font-bold mt-1">生活品質</div>
+                                    </div>
+                                    <div className="flex-1 bg-blue-50 p-3 rounded-xl border border-blue-100">
+                                        <div className={`text-3xl font-black ${getScoreColor(scores.relationship).replace('400','500')}`}>{scores.relationship.toFixed(0)}</div>
+                                        <div className="text-xs text-blue-800 font-bold mt-1">家庭關係</div>
+                                    </div>
+                                    <div className="flex-1 bg-red-50 p-3 rounded-xl border border-red-100">
+                                        <div className={`text-3xl font-black ${getScoreColor(scores.health).replace('400','500')}`}>{scores.health.toFixed(0)}</div>
+                                        <div className="text-xs text-red-800 font-bold mt-1">身心健康</div>
+                                    </div>
+                                </div>
+                                
+                                <div className="space-y-4 mb-8 bg-slate-50 p-5 rounded-xl border border-slate-200">
+                                    <h4 className="font-bold text-sm text-slate-700 border-b border-slate-200 pb-2 flex items-center gap-2">
+                                        <IconActivity className="w-4 h-4" /> 生活代價分析
+                                    </h4>
+                                    {activeImpacts.length > 0 ? activeImpacts.map((impact, i) => (
+                                        <div key={i} className="flex gap-3 text-sm text-slate-700 items-start">
+                                            <span className="text-red-500 mt-1 min-w-[10px] text-[10px]">●</span>
+                                            <span className="text-xs leading-relaxed">{impact.text}</span>
+                                        </div>
+                                    )) : (
+                                        <p className="text-center text-green-600 font-bold text-sm py-4">不可思議！您維持了完美的生活狀態！</p>
+                                    )}
+                                </div>
+                                <button onClick={() => { setShowResult(false); setCurrentStep(0); }} className="w-full bg-slate-800 text-white py-4 rounded-xl font-bold text-lg hover:bg-slate-700 active:scale-95 transition-transform">重新體驗</button>
                             </div>
                         </div>
                     )}
