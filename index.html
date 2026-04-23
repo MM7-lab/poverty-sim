@@ -135,9 +135,34 @@
                     title: '衣物鞋履 (Clothing)',
                     icon: <IconShirt className="w-6 h-6 text-purple-500" />,
                     options: [
-                        { price: 500, label: '季季添置', desc: '校服合身整潔，保持自信。', quality: '體面', impact: '', image: 'https://i.postimg.cc/1XdRhRyr/18.jpg' },
-                        { price: 200, label: '特價/平價網購', desc: '購買淘寶或特賣場衣物。', quality: '普通', impact: '質料較差或款式過時，鞋子容易磨腳。雖能蔽體，但在著重物質的朋輩圈子中可能會感到尷尬。', concept: '#物質匱乏', affects: { quality: 0.5, relationship: 0.2, health: 0.1 }, image: 'https://i.postimg.cc/HnNWDWTz/19.jpg' },
-                        { price: 0, label: '舊衣縫補', desc: '穿親戚舊衣，膠水黏鞋。', quality: '犧牲', impact: '校服發黃短小，被同學取笑，孩子因此抗拒上學，自我形象低落，產生社交退縮。', concept: '#社會標籤', affects: { quality: 1, relationship: 0.8, health: 0.5 }, image: 'https://i.postimg.cc/yxG6467v/20.jpg' }
+                        { 
+                            price: 500, 
+                            label: '基本添置與替換', 
+                            desc: '應付換季需求，大人有得體的上班服，小孩有合身的校服。', 
+                            quality: '體面', 
+                            impact: '', 
+                            image: 'https://i.postimg.cc/1XdRhRyr/18.jpg' 
+                        },
+                        { 
+                            price: 200, 
+                            label: '特價/平價網購', 
+                            desc: '專攻特賣場或平價網購，質料較差但求蔽體。', 
+                            quality: '普通', 
+                            impact: '衣物容易起毛球或褪色；大人穿著磨損的鞋子上班，可能影響求職或工作形象；孩子則因穿著廉價服飾在同儕間感到自卑。', 
+                            concept: '#物質匱乏', 
+                            affects: { quality: 0.5, relationship: 0.2, health: 0.1 }, 
+                            image: 'https://i.postimg.cc/HnNWDWTz/19.jpg' 
+                        },
+                        { 
+                            price: 0, 
+                            label: '舊衣縫補', 
+                            desc: '幾乎不買新衣，撿拾二手衣物，鞋底磨平仍繼續穿。', 
+                            quality: '犧牲', 
+                            impact: '寒冬缺乏保暖厚衣，容易生病。大人穿著破舊衣履導致社交退縮、迴避親友聚會；孩子因衣不稱身遭受排擠，全家陷入嚴重的社會排斥與孤立。', 
+                            concept: '#社會排斥', 
+                            affects: { quality: 1, relationship: 0.8, health: 0.5 }, 
+                            image: 'https://i.postimg.cc/d0Vp1wc9/A-claustrophobic-80-sq-ft-subdivided-flat-in-Hong-Kong-extremely-cramped-space-no-windows-peeling.jpg' 
+                        }
                     ]
                 }
             ];
@@ -360,12 +385,12 @@
                                     <h3 className="font-bold text-xl md:text-2xl text-gray-800">{currentCat.title}</h3>
                                 </div>
 
-                                {/* Options Grid: 擴展為 3 列佈局以適應寬螢幕 */}
+                                {/* Options Grid: 3個選項時會自動切換為 3 欄並排 (sm:grid-cols-3) */}
                                 <div className={`grid gap-3 md:gap-6 ${currentCat.options.length === 3 ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-1 sm:grid-cols-2'}`}>
                                     {currentCat.options.map((option, index) => {
                                         const isSelected = choices[currentCat.id] === index;
                                         
-                                        // Emoji Logic
+                                        // 還原為 3 個選項的 Emoji 邏輯
                                         let qualityEmoji = '🙂';
                                         if (index === 1) qualityEmoji = '😐'; 
                                         if (index === 2) qualityEmoji = '😢'; 
@@ -437,7 +462,7 @@
                         </div>
                     </div>
 
-                    {/* Result Modal - 保持不變以顯示最終解說 */}
+                    {/* Result Modal */}
                     {showResult && (
                         <div className="fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
                             <div className="bg-white rounded-2xl max-w-lg w-full p-8 overflow-y-auto max-h-[90vh] shadow-2xl">
