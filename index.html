@@ -181,18 +181,15 @@
                 setTimeout(() => setAnimationClass(''), 300);
             };
 
+            // 【修復】將防越界邏輯放入狀態更新內部，徹底防止快速連點導致的白畫面崩潰
             const handleNextStep = () => {
-                if (currentStep < categories.length - 1) {
-                    setCurrentStep(prev => prev + 1);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                }
+                setCurrentStep(prev => (prev < categories.length - 1 ? prev + 1 : prev));
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             };
 
             const handlePrevStep = () => {
-                if (currentStep > 0) {
-                    setCurrentStep(prev => prev - 1);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                }
+                setCurrentStep(prev => (prev > 0 ? prev - 1 : prev));
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             };
 
             const calculateScores = () => {
@@ -243,8 +240,8 @@
                     affects: cat.options[choices[cat.id]].affects
                 }));
 
-            // 取得目前分頁的類別
-            const currentCat = categories[currentStep];
+            // 【安全防護】取得目前分頁的類別，加入備用方案 (||) 確保即使出錯也永遠有資料可以渲染
+            const currentCat = categories[currentStep] || categories[categories.length - 1];
 
             return (
                 /* 單欄瀑布流佈局：移除 lg:flex-row 與 lg:overflow-hidden，讓內容自然向下延伸 */
