@@ -298,39 +298,43 @@
                                     <div className="grid grid-cols-3 gap-2 md:grid-cols-1 md:space-y-2.5">
                                         {/* Quality Index */}
                                         <div className="flex flex-col md:block">
-                                            <div className="flex justify-center md:justify-between items-center mb-1">
-                                                <span className="text-[9px] md:text-xs font-bold text-slate-400 flex items-center gap-1">
-                                                    <IconStar className="w-3 h-3 md:w-3.5 md:h-3.5 text-amber-500" /> <span className="hidden md:inline">生活品質</span>
+                                            {/* 手機版改為上下堆疊 (flex-col)，桌面版左右分佈 (md:flex-row) */}
+                                            <div className="flex flex-col md:flex-row items-center justify-between mb-1 gap-0.5 md:gap-0">
+                                                <span className="text-[10px] md:text-xs font-bold text-slate-400 flex items-center gap-1">
+                                                    <IconStar className="w-3 h-3 md:w-3.5 md:h-3.5 text-amber-500" /> 
+                                                    <span>生活品質</span>
                                                 </span>
-                                                <span className={`text-[10px] md:text-xs font-bold ml-1 md:ml-0 ${getScoreColor(scores.quality)}`}>{scores.quality.toFixed(0)}</span>
+                                                <span className={`text-[11px] md:text-xs font-bold ${getScoreColor(scores.quality)}`}>{scores.quality.toFixed(0)}</span>
                                             </div>
-                                            <div className="h-1 md:h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                                            <div className="h-1 md:h-1.5 bg-slate-700 rounded-full overflow-hidden w-full">
                                                 <div className={`h-full transition-all duration-500 ${getBarColor(scores.quality)}`} style={{ width: `${scores.quality}%` }}></div>
                                             </div>
                                         </div>
 
                                         {/* Relationship Index */}
                                         <div className="flex flex-col md:block">
-                                            <div className="flex justify-center md:justify-between items-center mb-1">
-                                                <span className="text-[9px] md:text-xs font-bold text-slate-400 flex items-center gap-1">
-                                                    <IconUsers className="w-3 h-3 md:w-3.5 md:h-3.5 text-blue-400" /> <span className="hidden md:inline">家庭關係</span>
+                                            <div className="flex flex-col md:flex-row items-center justify-between mb-1 gap-0.5 md:gap-0">
+                                                <span className="text-[10px] md:text-xs font-bold text-slate-400 flex items-center gap-1">
+                                                    <IconUsers className="w-3 h-3 md:w-3.5 md:h-3.5 text-blue-400" /> 
+                                                    <span>家庭關係</span>
                                                 </span>
-                                                <span className={`text-[10px] md:text-xs font-bold ml-1 md:ml-0 ${getScoreColor(scores.relationship)}`}>{scores.relationship.toFixed(0)}</span>
+                                                <span className={`text-[11px] md:text-xs font-bold ${getScoreColor(scores.relationship)}`}>{scores.relationship.toFixed(0)}</span>
                                             </div>
-                                            <div className="h-1 md:h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                                            <div className="h-1 md:h-1.5 bg-slate-700 rounded-full overflow-hidden w-full">
                                                 <div className={`h-full transition-all duration-500 ${getBarColor(scores.relationship)}`} style={{ width: `${scores.relationship}%` }}></div>
                                             </div>
                                         </div>
 
                                         {/* Health Index */}
                                         <div className="flex flex-col md:block">
-                                            <div className="flex justify-center md:justify-between items-center mb-1">
-                                                <span className="text-[9px] md:text-xs font-bold text-slate-400 flex items-center gap-1">
-                                                    <IconHeartCrack className="w-3 h-3 md:w-3.5 md:h-3.5 text-red-500" /> <span className="hidden md:inline">身心健康</span>
+                                            <div className="flex flex-col md:flex-row items-center justify-between mb-1 gap-0.5 md:gap-0">
+                                                <span className="text-[10px] md:text-xs font-bold text-slate-400 flex items-center gap-1">
+                                                    <IconHeartCrack className="w-3 h-3 md:w-3.5 md:h-3.5 text-red-500" /> 
+                                                    <span>身心健康</span>
                                                 </span>
-                                                <span className={`text-[10px] md:text-xs font-bold ml-1 md:ml-0 ${getScoreColor(scores.health)}`}>{scores.health.toFixed(0)}</span>
+                                                <span className={`text-[11px] md:text-xs font-bold ${getScoreColor(scores.health)}`}>{scores.health.toFixed(0)}</span>
                                             </div>
-                                            <div className="h-1 md:h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                                            <div className="h-1 md:h-1.5 bg-slate-700 rounded-full overflow-hidden w-full">
                                                 <div className={`h-full transition-all duration-500 ${getBarColor(scores.health)}`} style={{ width: `${scores.health}%` }}></div>
                                             </div>
                                         </div>
