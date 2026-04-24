@@ -166,7 +166,16 @@
                 }
             ];
 
-            // 加入容錯機制，防止找不到陣列資料時崩潰
+            // 【記憶體優化】建立一個函數，透過圖片 CDN 自動化壓縮高畫質原圖，防止手機記憶體溢出
+            const getOptimizedImage = (url) => {
+                if (!url) return '';
+                if (url.includes('wsrv.nl') || url.includes('via.placeholder')) return url;
+                // 去除 http 標頭以便 CDN 處理
+                const cleanUrl = url.replace(/(^\w+:|^)\/\//, '');
+                // 強制轉換為寬度 800px 的 WebP 格式，大幅減少 RAM 消耗
+                return `https://wsrv.nl/?url=${cleanUrl}&w=800&q=75&output=webp`;
+            };
+
             const totalExpenses = Object.keys(choices).reduce((acc, key) => {
                 const category = categories.find(c => c.id === key);
                 if (!category) return acc;
@@ -183,15 +192,19 @@
                 setTimeout(() => setAnimationClass(''), 300);
             };
 
-            // 【終極修復】安全的遞增機制與防止 Scroll 語法引發崩潰
+            // 【效能修復】延遲執行滾動，並改用更安全的瞬間置頂，防止與 React DOM 重繪產生資源衝突
             const handleNextStep = () => {
                 setCurrentStep(prev => Math.min(prev + 1, categories.length - 1));
-                try { window.scrollTo(0, 0); } catch(e) { console.log(e); }
+                setTimeout(() => {
+                    try { window.scrollTo(0, 0); } catch(e) { console.log(e); }
+                }, 10);
             };
 
             const handlePrevStep = () => {
                 setCurrentStep(prev => Math.max(prev - 1, 0));
-                try { window.scrollTo(0, 0); } catch(e) { console.log(e); }
+                setTimeout(() => {
+                    try { window.scrollTo(0, 0); } catch(e) { console.log(e); }
+                }, 10);
             };
 
             const calculateScores = () => {
@@ -234,7 +247,6 @@
                 return 'bg-red-500';
             };
 
-            // 加入可選串連 (?.) 防止讀取 impact 時引發崩潰
             const activeImpacts = categories
                 .filter(cat => choices[cat.id] > 0 && cat.options[choices[cat.id]]?.impact)
                 .map(cat => ({
@@ -245,7 +257,6 @@
                     affects: cat.options[choices[cat.id]]?.affects
                 }));
 
-            // 確保永遠不會取得 undefined
             const currentCat = categories[currentStep] || categories[categories.length - 1];
 
             return (
@@ -391,10 +402,22 @@
                                                 onClick={() => handleSelect(currentCat.id, index)}
                                                 className={`w-full text-left p-3 md:p-4 rounded-xl border-2 transition-all duration-200 relative group flex flex-col h-full ${isSelected ? 'border-blue-500 bg-blue-50/50 shadow-md ring-2 md:ring-4 ring-blue-100' : 'border-gray-200 hover:border-blue-300 bg-white hover:shadow-sm'}`}
                                             >
-                                                {/* 【修復】加入 loading="lazy" 與 decoding="async" 防止 iOS 記憶體耗盡引發白畫面 */}
+                                                {/* 【防崩潰升級】加入壓縮代理 (getOptimizedImage) 與 onError 降級處理 */}
                                                 {option.image && (
                                                     <div className="mb-3 md:mb-4 w-full bg-gray-50 rounded-lg overflow-hidden border border-gray-100">
-                                                        <img src={option.image} alt={option.label} className="w-full h-28 sm:h-36 md:h-48 object-cover mx-auto hover:scale-105 transition-transform duration-500" loading="lazy" decoding="async" />
+                                                        <img 
+                                                            src={getOptimizedImage(option.image)} 
+                                                            alt={option.label} 
+                                                            className="w-full h-28 sm:h-36 md:h-48 object-cover mx-auto hover:scale-105 transition-transform duration-500" 
+                                                            loading="lazy" 
+                                                            decoding="async" 
+                                                            onError={(e) => {
+                                                                if (!e.target.dataset.fallback) {
+                                                                    e.target.dataset.fallback = 'true';
+                                                                    e.target.src = option.image;
+                                                                }
+                                                            }}
+                                                        />
                                                     </div>
                                                 )}
                                                 <div className="flex flex-col gap-1 md:gap-1.5 mb-2 md:mb-3">
